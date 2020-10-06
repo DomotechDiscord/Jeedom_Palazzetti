@@ -196,34 +196,34 @@ class Palazzetti extends eqLogic
 	}
 
 	// interpretation valeur status poele
-	public static function getStoveState($num)
-	{
-		$lib[0] = 'OFF';
-		$lib[1] = 'OFF TIMER';
-		$lib[2] = 'TESTFIRE';
-		$lib[3] = 'HEATUP';
-		$lib[4] = 'FUELIGN';
-		$lib[5] = 'IGNTEST';
-		$lib[6] = 'BURNING';
-		$lib[9] = 'COOLFLUID';
-		$lib[10] = 'FIRESTOP';
-		$lib[11] = 'CLEANFIRE';
-		$lib[12] = 'COOL';
-		$lib[241] = 'CHIMNEY ALARM';
-		$lib[243] = 'GRATE ERROR';
-		$lib[244] = 'NTC2 ALARM';
-		$lib[245] = 'NTC3 ALARM';
-		$lib[247] = 'DOOR ALARM';
-		$lib[248] = 'PRESS ALARM';
-		$lib[249] = 'NTC1 ALARM';
-		$lib[250] = 'TC1 ALARM';
-		$lib[252] = 'GAS ALARM';
-		$lib[253] = 'NOPELLET ALARM';
-		if (isset($lib[$num])) {
-			return $lib[$num];
-		} else {
-			return $num;
-		}
+    public static function getStoveState($num)
+    {
+        $lib[0] = 'Eteint';
+        $lib[1] = 'Arrêté';
+        $lib[2] = 'Vérification';
+        $lib[3] = 'Chargement granulés';
+        $lib[4] = 'Allumage';
+        $lib[5] = 'Contrôle combustion';
+        $lib[6] = 'En chauffe';
+        $lib[9] = 'Diffusion';
+        $lib[10] = 'Extinction';
+        $lib[11] = 'Nettoyage';
+        $lib[12] = 'Refroidissement';
+        $lib[241] = 'Erreur Nettoyage';
+        $lib[243] = 'Erreur Grille';
+        $lib[244] = 'NTC2 ALARM';
+        $lib[245] = 'NTC3 ALARM';
+        $lib[247] = 'Erreur Porte';
+        $lib[248] = 'Erreur Dépression';
+        $lib[249] = 'NTC1 ALARM';
+        $lib[250] = 'TC1 ALARM';
+        $lib[252] = 'Erreur évacuation Fumée';
+        $lib[253] = 'Pas de pellets';
+        if (isset($lib[$num])) {
+            return $lib[$num];
+        } else {
+            return $num;
+        }
 	}
 
 	// methode jour de la semaine
