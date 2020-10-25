@@ -153,19 +153,33 @@ class Palazzetti extends eqLogic
 	}
 
 	// interpretation valeur ventilateur
-	public static function getFanState($num)
+	public function getFanState($num)
 	{
-		switch ($num) {
-			case 0:
-			case 6:
-				$value = 'AUTO';
-				break;
-			case 7:
-				$value = 'OFF';
-				break;
-			default:
-				$value = $num;
-		}
+	    if ($this->getConfiguration('Cbox') == 0) {
+            switch ($num) {
+                case 0:
+                case 6:
+                    $value = 'AUTO';
+                    break;
+                case 7:
+                    $value = 'OFF';
+                    break;
+                default:
+                    $value = $num;
+            }
+        }else {
+            switch ($num) {
+                case 0:
+                case 6:
+                    $value = 'HIGH';
+                    break;
+                case 7:
+                    $value = 'AUTO';
+                    break;
+                default:
+                    $value = $num;
+            }
+        }
 		return $value;
 	}
 
