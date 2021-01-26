@@ -58,7 +58,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 							<label class="col-sm-3 control-label">{{Nom du Palazzetti}}</label>
 							<div class="col-sm-3">
 								<input type="text" class="eqLogicAttr form-control" data-l1key="id" style="display : none;" />
-								<input type="text" class="eqLogicAttr form-control" data-l1key="name" placeholder="{{Nom de l'équipement template}}" />
+								<input type="text" class="eqLogicAttr form-control" data-l1key="name" placeholder="{{Nom de l'équipement Palazzetti}}" />
 							</div>
 						</div>
 						<div class="form-group">
@@ -67,9 +67,9 @@ $eqLogics = eqLogic::byType($plugin->getId());
 								<select id="sel_object" class="eqLogicAttr form-control" data-l1key="object_id">
 									<option value="">{{Aucun}}</option>
 									<?php
-									foreach (jeeObject::all() as $object) {
-										echo '<option value="' . $object->getId() . '">' . $object->getName() . '</option>';
-									}
+                                        foreach (jeeObject::all() as $object) {
+                                            echo '<option value="' . $object->getId() . '">' . $object->getName() . '</option>';
+                                        }
 									?>
 								</select>
 							</div>
@@ -96,13 +96,13 @@ $eqLogics = eqLogic::byType($plugin->getId());
 						<div class="form-group">
 							<label class="col-sm-3 control-label">{{Adresse IP}}</label>
 							<div class="col-sm-3">
-								<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="addressip" type="text" placeholder="{{saisir l'adresse IP}}">
+								<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="addressip" type="text" placeholder="{{Saisir l'adresse IP}}">
 							</div>
 						</div>
                         <div class="form-group">
                             <label class="col-sm-3 control-label"></label>
                             <div class="col-sm-9">
-                                <label class="checkbox-inline"><input id="deamoncheck" type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="Cbox" />{{Poêle BEATRICE}}</label>
+                                <label class="checkbox-inline"><input id="deamoncheck" type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="ModeHIGH" />{{Poêle mode HIGH}}</label>
                             </div>
                         </div>
 					</fieldset>
