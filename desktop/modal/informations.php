@@ -14,7 +14,7 @@
 
 	$value = json_decode($eqLogic->getCmd('info','ITime')->getCache()['value']);
 	echo '<tr><td>Heure du poêle</td><td>'. $value->DATA->STOVE_DATETIME.'</td></tr>';
-	echo '<tr><td>Jour de la semaine</td><td>'. Palazzetti::getWeekDay($value->DATA->STOVE_WDAY).'</td></tr>';
+	//echo '<tr><td>Jour de la semaine</td><td>'. Palazzetti::getWeekDay($value->DATA->STOVE_WDAY).'</td></tr>';
 
 	$value = $eqLogic->getCmd('info','IConsigne');
 	echo '<tr><td>Température de consigne</td><td>'. $value->getCache()['value'].' °C</td></tr>';
@@ -23,13 +23,13 @@
 	echo '<tr><td>Température ambiance</td><td>'. $value->getCache()['value'].' °C</td></tr>';
 
 	$value = $eqLogic->getCmd('info','IFan');
-	echo '<tr><td>Force ventilateur</td><td>'. Palazzetti::getFanState($value->getCache()['value']).'</td></tr>';
+	//echo '<tr><td>Force ventilateur</td><td>'. Palazzetti::getFanState($value->getCache()['value']).'</td></tr>';
 
 	$value = $eqLogic->getCmd('info','IPower');
 	echo '<tr><td>Force du feu</td><td>'. $value->getCache()['value'].'</td></tr>';
 
 	$value = $eqLogic->getCmd('info','IStatus');
-	echo '<tr><td>Etat poêle</td><td>'.  Palazzetti::getStoveState($value->getCache()['value']).'</td></tr>';
+	//echo '<tr><td>Etat poêle</td><td>'.  Palazzetti::getStoveState($value->getCache()['value']).'</td></tr>';
 
 	$value = $eqLogic->getCmd('info','INbAllumage');
 	echo '<tr><td>Nombre d\'allumages</td><td>';
@@ -98,4 +98,3 @@
 ?>
 	</tbody>
 </table>
-
