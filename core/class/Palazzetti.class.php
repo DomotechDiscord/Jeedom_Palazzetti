@@ -6,26 +6,6 @@ require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
 
 class Palazzetti extends eqLogic
 {
-
-	// tache automatique 15 minutes
-/*	public static function cron15()
-	{
-		foreach (eqLogic::byType('Palazzetti') as $Palazzetti) {
-			$Palazzetti->getInformations();
-			$mc = cache::byKey('PalazzettiWidgetmobile' . $Palazzetti->getId());
-			$mc->remove();
-			$mc = cache::byKey('PalazzettiWidgetdashboard' . $Palazzetti->getId());
-			$mc->remove();
-			$Palazzetti->toHtml('mobile');
-			$Palazzetti->toHtml('dashboard');
-			$Palazzetti->refreshWidget();
-
-			// mise à jour horloge 
-			$date = date("Y-m-d H:i:s");
-			//$DATA = $Palazzetti->makeRequest($cmdString) ;
-		}
-	}*/
-
 	public static function cron()
 	{
 		$autorefresh = config::byKey('autorefresh', 'Palazzetti');
@@ -52,13 +32,15 @@ class Palazzetti extends eqLogic
 								$date = date("Y-m-d H:i:s");
 								//$DATA = $Palazzetti->makeRequest($cmdString);
 							} catch (Exception $exc) {
-								/** Sans réponse 3 fois, je désactive l'équipement **/
-								$numberTryWithoutSuccess = $Palazzetti->getStatus('numberTryWithoutSuccess', 0);
-								$numberTryWithoutSuccess++;
-								$Palazzetti->setStatus('numberTryWithoutSuccess', $numberTryWithoutSuccess);
-								if ($numberTryWithoutSuccess >= $numberOfTryBeforeEqLogicDisable) {
-									$Palazzetti->setIsEnable(0);
-									$Palazzetti->save();
+								if (config::byKey('autoDisable', 'Palazzetti', '', true)) {
+									/** Sans réponse 3 fois, je désactive l'équipement **/
+									$numberTryWithoutSuccess = $Palazzetti->getStatus('numberTryWithoutSuccess', 0);
+									$numberTryWithoutSuccess++;
+									$Palazzetti->setStatus('numberTryWithoutSuccess', $numberTryWithoutSuccess);
+									if ($numberTryWithoutSuccess >= $numberOfTryBeforeEqLogicDisable) {
+										$Palazzetti->setIsEnable(0);
+										$Palazzetti->save();
+									}
 								}
 							}
 						}
