@@ -102,17 +102,22 @@ $eqLogics = eqLogic::byType($plugin->getId());
 							</div>
 						</div>
                         <div class="form-group">
+                            <label class="col-sm-3 control-label">{{Model : }}</label>
+                            <div class="col-sm-3">
+                                <select id="sel_object" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="PoeleType">
+                                    <option value="">{{Aucun}}</option>
+                                    <option value="Palazzetti">{{Palazzetti}}</option>
+                                    <option value="PalazzettiHigh">{{Palazzetti Mode High}}</option>
+                                    <option value="PalaControl">{{PalaControl}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!--<div class="form-group">
                             <label class="col-sm-3 control-label"></label>
                             <div class="col-sm-9">
                                 <label class="checkbox-inline"><input id="deamoncheck" type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="ModeHIGH" />{{Poêle mode HIGH}}</label>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label"></label>
-                            <div class="col-sm-9">
-                                <label class="checkbox-inline"><input id="deamoncheck" type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="PalaControl" />{{PalaControl}}</label>
-                            </div>
-                        </div>
+                        </div>-->
 						<div class="form-group">
 							<label class="col-sm-3 control-label help">{{Template de widget}} <sup><i class="fa fa-question-circle tooltips" title="{{Cochez la case pour utiliser le widget de l'équipement}}"></i>
 							</sup></label>
@@ -136,8 +141,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 					<tbody>
 					</tbody>
 				</table>
-				<a class="btn btn-success btn-sm cmdAction pull-right" data-action="add" style="margin-top:5px;"><i class="fas fa-plus-circle"></i> {{Ajouter une Commande}}</a><br /><br />
-			</div>
+            </div>
 		</div>
 	</div>
 </div>

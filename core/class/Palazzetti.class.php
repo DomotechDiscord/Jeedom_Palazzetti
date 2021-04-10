@@ -54,63 +54,11 @@ class Palazzetti extends eqLogic
 		log::add(__CLASS__, 'debug', __FUNCTION__ . __(' : fin', __FILE__));
 	}
 
-	// apres creation équipement
+	// apres sauvegarde équipement
 	public function postInsert()
 	{
 		/** forcer à 15 min à la première mise en service **/
-		if(config::byKey('autorefresh', 'Palazzetti') == '') {
-			config::save("*/15 * * * *", 'autorefresh', 'Palazzetti');
-        }
-    }
-
-	// apres sauvegarde équipement
-	public function preSave()
-	{
-		/** selection du fichier de config pour créer les commandes **/
-	    $PalaControl = $this->getConfiguration('PalaControl', 0);
-		if ($PalaControl == 0) {
-			$configFile = "Palazzetti";
-		} else {
-			$configFile = "PalaControl";
-		}
-		$TabCmd = $this->loadCmdFromConf($configFile);
-
-		//Chaque commande
-		$Order = 0;
-		if (is_array($TabCmd) || is_object($TabCmd)) {
-			foreach ($TabCmd as $CmdKey => $Cmd) {
-
-				$PalazzettiCmd = $this->getCmd(null, $Cmd['LogicalId']);
-				if (!is_object($PalazzettiCmd)) {
-					$PalazzettiCmd = new PalazzettiCmd();
-				}
-				$PalazzettiCmd->setName($Cmd['Libelle']);
-				$PalazzettiCmd->setEqLogic_id($this->getId());
-				$PalazzettiCmd->setLogicalId($Cmd['LogicalId']);
-				$PalazzettiCmd->setType($Cmd['Type']);
-				$PalazzettiCmd->setSubType($Cmd['SubType']);
-				$PalazzettiCmd->setIsVisible($Cmd['visible']);
-				if ($Cmd['Type'] == "action") {
-					$PalazzettiCmd->setConfiguration('actionCmd', $Cmd['actionCmd']);
-					$PalazzettiCmd->setConfiguration('updateLogicalId', $Cmd['updateLogicalId']);
-				}
-				if ($Cmd['SubType'] == "slider") {
-					$PalazzettiCmd->setConfiguration('nparams', $Cmd['nparams']);
-					$PalazzettiCmd->setConfiguration('parameters', $Cmd['parameters']);
-					$PalazzettiCmd->setConfiguration('minValue', $Cmd['minValue']);
-					$PalazzettiCmd->setConfiguration('maxValue', $Cmd['maxValue']);
-				}
-				if ($Cmd['Unite'] != '') {
-					$PalazzettiCmd->setUnite($Cmd['Unite']);
-				}
-				if ($Cmd['IsHistorized'] == true) {
-					$PalazzettiCmd->setIsHistorized(1);
-				}
-				$PalazzettiCmd->setOrder($Order);
-				$PalazzettiCmd->save();
-				$Order++;
-			}
-		}
+		config::save("*/15 * * * *", 'autorefresh', 'Palazzetti');
 	}
 
 	public function preUpdate()
@@ -140,6 +88,57 @@ class Palazzetti extends eqLogic
 		'border-radius' => true,
 		'background-opacity' => true,
 	));
+
+	private function updateCMD() {
+		/** selection du fichier de config pour créer les commandes **/
+		$PoeleType = $this->getConfiguration('PoeleType', "");
+
+		if ($PoeleType == "") return;
+
+		$TabCmd = $this->loadCmdFromConf($PoeleType);
+
+		//Chaque commande
+		$Order = 0;
+		if (is_array($TabCmd) || is_object($TabCmd)) {
+			foreach ($TabCmd as $Cmd) {
+
+				$PalazzettiCmd = $this->getCmd(null, $Cmd['LogicalId']);
+				if (!is_object($PalazzettiCmd)) {
+					$PalazzettiCmd = new PalazzettiCmd();
+				}
+				$PalazzettiCmd->setName($Cmd['Libelle']);
+				$PalazzettiCmd->setEqLogic_id($this->getId());
+				$PalazzettiCmd->setLogicalId($Cmd['LogicalId']);
+				$PalazzettiCmd->setType($Cmd['Type']);
+				$PalazzettiCmd->setSubType($Cmd['SubType']);
+				$PalazzettiCmd->setIsVisible($Cmd['visible']);
+				if ($Cmd['Type'] == "action") {
+					$PalazzettiCmd->setConfiguration('actionCmd', $Cmd['actionCmd']);
+					$PalazzettiCmd->setConfiguration('updateLogicalId', $Cmd['updateLogicalId']);
+				}
+				if ($Cmd['SubType'] == "slider") {
+					$PalazzettiCmd->setConfiguration('nparams', $Cmd['nparams']);
+					$PalazzettiCmd->setConfiguration('parameters', $Cmd['parameters']);
+					$PalazzettiCmd->setConfiguration('minValue', $Cmd['minValue']);
+					$PalazzettiCmd->setConfiguration('maxValue', $Cmd['maxValue']);
+				}
+				if ($Cmd['Unite'] != '') {
+					$PalazzettiCmd->setUnite($Cmd['Unite']);
+				}
+				if ($Cmd['IsHistorized']) {
+					$PalazzettiCmd->setIsHistorized(1);
+				}
+				$PalazzettiCmd->setOrder($Order);
+				$PalazzettiCmd->save();
+				$Order++;
+			}
+		}
+	}
+
+	public function postSave()
+	{
+		self::updateCMD();
+	}
 
 	/** méthode de récupération des fichiers de configuration **/
 	public function loadCmdFromConf($type) {
@@ -187,7 +186,7 @@ class Palazzetti extends eqLogic
 	// interpretation valeur ventilateur
 	public function getFanState($num)
 	{
-	    if ($this->getConfiguration('ModeHIGH') == 0) {
+	    if ($this->getConfiguration('PoeleType') == "PalazzettiHigh") {
             switch ($num) {
                 case 0:
                 case 6:
@@ -316,14 +315,14 @@ class Palazzetti extends eqLogic
 			return 'ERROR';
 		}
 		// verification succes du traitement
-	    if ($this->getConfiguration('PalaControl') == 0) {
-			if ($DATA->INFO->RSP != 'OK') {
-				log::add('Palazzetti', 'error', '(' . __LINE__ . ') ' . __FUNCTION__ . ' - ' . ' erreur ' . $CMD . ' : ' . $DATA->INFO->RSP);
+	    if ($this->getConfiguration('PoeleType') == "PalaControl") {
+			if ($DATA->SUCCESS != 'true' && !is_object($DATA)) {
+				log::add('Palazzetti', 'error', '(' . __LINE__ . ') ' . __FUNCTION__ . ' - ' . ' erreur ' . $CMD . ' : ' . json_encode($DATA));
 				return false;
 			}
 		} else {
-			if ($DATA->SUCCESS != 'true' && !is_object($DATA)) {
-				log::add('Palazzetti', 'error', '(' . __LINE__ . ') ' . __FUNCTION__ . ' - ' . ' erreur ' . $CMD . ' : ' . json_encode($DATA));
+			if ($DATA->INFO->RSP != 'OK') {
+				log::add('Palazzetti', 'error', '(' . __LINE__ . ') ' . __FUNCTION__ . ' - ' . ' erreur ' . $CMD . ' : ' . $DATA->INFO->RSP);
 				return false;
 			}
 		}
@@ -332,7 +331,40 @@ class Palazzetti extends eqLogic
 		$expl = explode('+', $cmdString);
 		$pattern = $expl[0] . '+' . $expl[1];
 
-		if ($this->getConfiguration('PalaControl') == 0) {
+		if ($this->getConfiguration('PoeleType') == "PalaControl") {
+			// traitement suivant commande
+			switch ($pattern) {
+				// status
+				case 'GET+STAT':
+					$value = $this->getStoveState($DATA->DATA->STATUS);
+					break;
+				// heure du poele
+				case 'GET+TIME':
+					$value = $DATA->DATA->STOVE_DATETIME;
+					break;
+				// force du feu
+				case 'GET+POWR':
+					$value = $DATA->DATA->PWR;
+					//FDR ?
+					break;
+				// température de consigne
+				case 'GET+SETP':
+					$value = $DATA->DATA->SETP;
+					break;
+				// force des ventilateurs via tableau
+				case 'GET+FAND':
+					$value['RFan'] = $this->getFanState($DATA->DATA->F2L);
+					$value['IFanF3L'] = $this->getFanState($DATA->DATA->F3L);
+					$value['IFanF4L'] = $this->getFanState($DATA->DATA->F4L);
+					break;
+				// températures ambiance, granulés et fumées-combustion via tableau
+				case 'GET+TMPS':
+					$value['ITemp'] = $DATA->DATA->T1;
+					$value['ITemp2'] = $DATA->DATA->T2;
+					$value['ITemp3'] = $DATA->DATA->T3;
+					break;
+			}
+        } else {
 			// traitement suivant commande
 			switch ($pattern) {
 				// allumage, extinction, status
@@ -340,28 +372,28 @@ class Palazzetti extends eqLogic
 				case 'CMD+OFF':
 				case 'GET+STAT':
 					$value = $this->getStoveState($DATA->Status->STATUS);
-                break;
+					break;
 				// nom poele
 				case 'GET+LABL':
 				case 'SET+LABL':
 					$value = $DATA->StoveData->LABEL;
-                break;
+					break;
 				// force du feu
 				case 'SET+POWR':
 					$value = $DATA->DATA->PWR;
-                break;
+					break;
 				// température de consigne
 				case 'GET+SETP':
 				case 'SET+SETP':
 					$value = $DATA->DATA->SETP;
-                break;
+					break;
 				// force du ventilateur
 				case 'GET+FAND':
 					$value = $this->getFanState($DATA->Fans->FAN_FAN2LEVEL);
-                break;
+					break;
 				case 'SET+RFAN':
 					$value = $this->getFanState($DATA->DATA->F2L);
-                break;
+					break;
 				// force ventilateur F3L
 				case 'SET+FN3L':
 					$value = $this->getFanState($DATA->DATA->F3L);
@@ -389,39 +421,6 @@ class Palazzetti extends eqLogic
 				case 'EXT+ADRD':
 					$value = $DATA->DATA->{'ADDR_' . $expl[2]};
 					log::add('Palazzetti', 'debug', '(' . __LINE__ . ') ' . __FUNCTION__ . ' - ' . 'reponse ' . $value);
-					break;
-			}
-        } else {
-			// traitement suivant commande
-			switch ($pattern) {
-					// status
-				case 'GET+STAT':
-					$value = $this->getStoveState($DATA->DATA->STATUS);
-					break;
-					// heure du poele
-				case 'GET+TIME':
-					$value = $DATA->DATA->STOVE_DATETIME;
-					break;
-					// force du feu
-				case 'GET+POWR':
-					$value = $DATA->DATA->PWR;
-					//FDR ?
-					break;
-					// température de consigne
-				case 'GET+SETP':
-					$value = $DATA->DATA->SETP;
-					break;
-					// force des ventilateurs via tableau
-				case 'GET+FAND':
-					$value['RFan'] = $this->getFanState($DATA->DATA->F2L);
-					$value['IFanF3L'] = $this->getFanState($DATA->DATA->F3L);
-					$value['IFanF4L'] = $this->getFanState($DATA->DATA->F4L);
-					break;
-					// températures ambiance, granulés et fumées-combustion via tableau
-				case 'GET+TMPS':
-					$value['ITemp'] = $DATA->DATA->T1;
-					$value['ITemp2'] = $DATA->DATA->T2;
-					$value['ITemp3'] = $DATA->DATA->T3;
 					break;
 			}
 		}
@@ -508,8 +507,131 @@ class Palazzetti extends eqLogic
 	// récupération automatique des informations
 	public function getInformations()
 	{
-		// PALAZZETTI
-		if ($this->getConfiguration('PalaControl') == 0) {
+	// PalaControl
+		if ($this->getConfiguration('PoeleType') == "PalaControl") {
+			// récupération de l'heure
+			$DATA = $this->makeRequest('GET+TIME');
+			if ($DATA != false) {
+				// mise à jour heure du poele
+				$TIME = $this->getCmd(null, 'ITime');
+				$TIME->event(json_encode($DATA->DATA->STOVE_DATETIME));
+				$TIME->save();
+			}
+			// récupération des informations réseau
+			$DATA = $this->makeRequest('ffffffff');
+			if ($DATA != false) {
+				// mise à jour nom du poêle
+				$LABL = $this->getCmd(null, 'IName');
+				$LABL->event($DATA->m);
+				$LABL->save();
+			}
+			$DATA = $this->makeRequest('gsw');
+			if ($DATA != false) {
+				// mise à jour info connexion
+				$POWR = $this->getCmd(null, 'INetwork');
+				$POWR->event(json_encode($DATA));
+				$POWR->save();
+			}
+			//récupération des compteurs
+			$DATA = $this->makeRequest('GET+CUNT');
+			if ($DATA != false) {
+				// mise a jour nombre d'allumages
+				$EXT = $this->getCmd(null, 'INbAllumage');
+				$EXT->event($DATA->DATA->IGN);
+				$EXT->save();
+				// mise a jour temps allumage (sous tension)
+				$ELEC = $this->getCmd(null, 'IHeuresAlimElec');
+				$ELEC->event($DATA->DATA->POWERTIME);
+				$ELEC->save();
+				// mise a jour temps de chauffe( de travail)
+				$CHAUF = $this->getCmd(null, 'IHeuresChauffe');
+				$CHAUF->event($DATA->DATA->HEATTIME);
+				$CHAUF->save();
+				// mise a jour erreur surchauffe
+				$EXT = $this->getCmd(null, 'IHeuresSurChauffe');
+				$EXT->event($DATA->DATA->OVERTMPERRORS);
+				$EXT->save();
+				// mise a jour nombre allumage ratés
+				$EXT = $this->getCmd(null, 'INbAllumageFailed');
+				$EXT->event($DATA->DATA->IGNERRORS);
+				$EXT->save();
+				// mise a jour heure depuis entretien
+				$EXT = $this->getCmd(null, 'IHeuresDepuisEntretien');
+				$EXT->event($DATA->DATA->SERVICETIME);
+				$EXT->save();
+				// mise a jour quantité de pellets consommés
+				$QUANT = $this->getCmd(null, 'IQuant');
+				$QUANT->event($DATA->DATA->PQT);
+				$QUANT->save();
+			}
+			// récupération de toutes les informations PalaControl
+			$DATA = $this->makeRequest('GET+ALLS');
+			if ($DATA != false) {
+				// mise à jour température de consigne
+				$TCON = $this->getCmd(null, 'IConsigne');
+				$TCON->event($DATA->DATA->SETP);
+				$TCON->save();
+				// mise à jour status poele
+				$STA = $this->getCmd(null, 'IStatus');
+				$STA->event($DATA->DATA->STATUS);
+				$STA->save();
+				// mise à jour temperature ambiance
+				$TMP = $this->getCmd(null, 'ITemp');
+				$TMP->event($DATA->DATA->T1);
+				$TMP->save();
+				// mise a jour quantité de pellets consommée
+				$QUANT = $this->getCmd(null, 'IQuant');
+				$QUANT->event($DATA->DATA->PQT);
+				$QUANT->save();
+				// mise a jour variables snap
+				$SNAP = $this->getCmd(null, 'ISnap');
+				$SNAP->event(json_encode($DATA));
+				$SNAP->save();
+			}
+
+			$DATA = $this->makeRequest('GET+POWR');
+			if ($DATA != false) {
+				// mise à jour force du feu
+				$POWR = $this->getCmd(null, 'IPower');
+				$POWR->event($DATA->DATA->PWR);
+				$POWR->save();
+			}
+
+			$DATA = $this->makeRequest('GET+FAND');
+			if ($DATA != false) {
+				// mise à jour force du ventilateur
+				$FAN = $this->getCmd(null, 'IFan');
+				$FAN->event($DATA->DATA->F2L);
+				$FAN->save();
+				// mise à jour force du ventilateur 3 F3L
+				$FANF3L = $this->getCmd(null, 'IFanF3L');
+				$FANF3L->event($DATA->DATA->F3L);
+				$FANF3L->save();
+				// mise à jour force du ventilateur 4 F4L
+				$FANF4L = $this->getCmd(null, 'IFanF4L');
+				$FANF4L->event($DATA->DATA->F4L);
+				$FANF4L->save();
+			}
+
+			$DATA = $this->makeRequest('GET+TMPS');
+			if ($DATA != false) {
+				// mise à jour temperature ambiance
+				$TMP = $this->getCmd(null, 'ITemp');
+				$TMP->event($DATA->DATA->T1);
+				$TMP->save();
+
+				// mise à jour temperature granulés
+				$TMP2 = $this->getCmd(null, 'ITemp2');
+				$TMP2->event($DATA->DATA->T2);
+				$TMP2->save();
+
+				// mise à jour temperature granulés
+				$TMP3 = $this->getCmd(null, 'ITemp3');
+				$TMP3->event($DATA->DATA->T3);
+				$TMP3->save();
+			}
+		}
+		else {
 			// récupération de l'heure
 			$DATA = $this->makeRequest('GET+TIME');
 			if ($DATA != false) {
@@ -617,129 +739,6 @@ class Palazzetti extends eqLogic
 				$EXT = $this->getCmd(null, 'IHeuresDepuisEntretien');
 				$EXT->event($DATA->DATA->ADDR_2076);
 				$EXT->save();
-			}
-		// PALACONTROL
-		} else {
-			// récupération de l'heure
-			$DATA = $this->makeRequest('GET+TIME');
-			if ($DATA != false) {
-				// mise à jour heure du poele
-				$TIME = $this->getCmd(null, 'ITime');
-				$TIME->event(json_encode($DATA->DATA->STOVE_DATETIME));
-				$TIME->save();
-			}
-			// récupération des informations réseau
-			$DATA = $this->makeRequest('ffffffff');
-			if ($DATA != false) {
-				// mise à jour nom du poêle
-				$LABL = $this->getCmd(null, 'IName');
-				$LABL->event($DATA->m);
-				$LABL->save();
-			}
-			$DATA = $this->makeRequest('gsw');
-			if ($DATA != false) {
-				// mise à jour info connexion
-				$POWR = $this->getCmd(null, 'INetwork');
-				$POWR->event(json_encode($DATA));
-				$POWR->save();
-            }
-			//récupération des compteurs
-			$DATA = $this->makeRequest('GET+CUNT');
-			if ($DATA != false) {
-				// mise a jour nombre d'allumages
-				$EXT = $this->getCmd(null, 'INbAllumage');
-				$EXT->event($DATA->DATA->IGN);
-				$EXT->save();
-				// mise a jour temps allumage (sous tension) 
-				$ELEC = $this->getCmd(null, 'IHeuresAlimElec');
-				$ELEC->event($DATA->DATA->POWERTIME);
-				$ELEC->save();
-				// mise a jour temps de chauffe( de travail)
-				$CHAUF = $this->getCmd(null, 'IHeuresChauffe');
-				$CHAUF->event($DATA->DATA->HEATTIME);
-				$CHAUF->save();
-				// mise a jour erreur surchauffe
-				$EXT = $this->getCmd(null, 'IHeuresSurChauffe');
-				$EXT->event($DATA->DATA->OVERTMPERRORS);
-				$EXT->save();
-				// mise a jour nombre allumage ratés
-				$EXT = $this->getCmd(null, 'INbAllumageFailed');
-				$EXT->event($DATA->DATA->IGNERRORS);
-				$EXT->save();
-				// mise a jour heure depuis entretien
-				$EXT = $this->getCmd(null, 'IHeuresDepuisEntretien');
-				$EXT->event($DATA->DATA->SERVICETIME);
-				$EXT->save();
-				// mise a jour quantité de pellets consommés
-				$QUANT = $this->getCmd(null, 'IQuant');
-				$QUANT->event($DATA->DATA->PQT);
-				$QUANT->save();
-			}
-			// récupération de toutes les informations PalaControl
-			$DATA = $this->makeRequest('GET+ALLS');
-			if ($DATA != false) {
-				// mise à jour température de consigne
-				$TCON = $this->getCmd(null, 'IConsigne');
-				$TCON->event($DATA->DATA->SETP);
-				$TCON->save();
-				// mise à jour status poele
-				$STA = $this->getCmd(null, 'IStatus');
-				$STA->event($DATA->DATA->STATUS);
-				$STA->save();
-				// mise à jour temperature ambiance
-				$TMP = $this->getCmd(null, 'ITemp');
-				$TMP->event($DATA->DATA->T1);
-				$TMP->save();
-				// mise a jour quantité de pellets consommée
-				$QUANT = $this->getCmd(null, 'IQuant');
-				$QUANT->event($DATA->DATA->PQT);
-				$QUANT->save();
-				// mise a jour variables snap
-				$SNAP = $this->getCmd(null, 'ISnap');
-				$SNAP->event(json_encode($DATA));
-				$SNAP->save();
-			}
-
-			$DATA = $this->makeRequest('GET+POWR');
-			if ($DATA != false) {
-          		// mise à jour force du feu
-				$POWR = $this->getCmd(null, 'IPower');
-				$POWR->event($DATA->DATA->PWR);
-				$POWR->save();
-			}
-
-			$DATA = $this->makeRequest('GET+FAND');
-			if ($DATA != false) {
-				// mise à jour force du ventilateur
-				$FAN = $this->getCmd(null, 'IFan');
-				$FAN->event($DATA->DATA->F2L);
-				$FAN->save();
-				// mise à jour force du ventilateur 3 F3L
-				$FANF3L = $this->getCmd(null, 'IFanF3L');
-				$FANF3L->event($DATA->DATA->F3L);
-				$FANF3L->save();
-				// mise à jour force du ventilateur 4 F4L
-				$FANF4L = $this->getCmd(null, 'IFanF4L');
-				$FANF4L->event($DATA->DATA->F4L);
-				$FANF4L->save();
-			}
-
-			$DATA = $this->makeRequest('GET+TMPS');
-			if ($DATA != false) {
-				// mise à jour temperature ambiance
-				$TMP = $this->getCmd(null, 'ITemp');
-				$TMP->event($DATA->DATA->T1);
-				$TMP->save();
-
-				// mise à jour temperature granulés
-				$TMP2 = $this->getCmd(null, 'ITemp2');
-				$TMP2->event($DATA->DATA->T2);
-				$TMP2->save();
-
-				// mise à jour temperature granulés
-				$TMP3 = $this->getCmd(null, 'ITemp3');
-				$TMP3->event($DATA->DATA->T3);
-				$TMP3->save();
 			}
 		}
 	}
