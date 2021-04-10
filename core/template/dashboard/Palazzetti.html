@@ -38,15 +38,15 @@
 		</div>
 	</div>
 	<script>
-		var status 		    = '#status#'; 
-		var power 			= '#power#';
-		var fan 			= '#fan#';
-		var consigne 		= '#consigne#';
+		var status              = '#status#'; 
+		var power               = '#power#';
+		var fan                 = '#fan#';
+		var consigne            = '#consigne#';
 		
 		/* on/off */
 		$(function() {
 
-			if(jQuery.inArray(status, ['Eteint','Arrêté','OFF','OFF TIMER']) == -1){
+			if(jQuery.inArray(status, ['Eteint','Arrêté','OFF','OFF TIMER']) !== -1){
 				$('#onoff_action').addClass('btn-success').removeClass('btn-danger').text('START'); 
 			} else { 
 				$('#onoff_action').addClass('btn-danger').removeClass('btn-success').text('STOP'); 
@@ -54,7 +54,7 @@
 		});
 		
 		$('#onoff_action').on('click', function(){
-			if(jQuery.inArray(status, ['Eteint','Arrêté','OFF','OFF TIMER']) == -1){
+			if(jQuery.inArray(status, ['Eteint','Arrêté','OFF','OFF TIMER']) !== -1){
 				jeedom.cmd.execute({id: #on_id#});
 				status = "ON";
 			} else {
