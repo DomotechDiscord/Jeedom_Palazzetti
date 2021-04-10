@@ -64,8 +64,12 @@ class Palazzetti extends eqLogic
     }
 
 	// apres sauvegarde équipement
-	public function preSave()
+	public function preUpdate()
 	{
+		/** refuser si l'adresse est vide lors de l'enregistrement **/
+		if (empty($this->getConfiguration('addressip'))) {
+			throw new Exception(__('L\'adresse IP ne peut pas être vide',__FILE__));
+		}
 		/** selection du fichier de config pour créer les commandes **/
 	    $PalaControl = $this->getConfiguration('PalaControl');
 		if ($PalaControl == 0) {
@@ -112,14 +116,6 @@ class Palazzetti extends eqLogic
 				$PalazzettiCmd->save();
 				$Order++;
 			}
-		}
-	}
-
-	public function preUpdate()
-	{
-		/** refuser si l'adresse est vide lors de l'enregistrement **/
-		if (empty($this->getConfiguration('addressip'))) {
-			throw new Exception(__('L\'adresse IP ne peut pas être vide',__FILE__));
 		}
 	}
 
