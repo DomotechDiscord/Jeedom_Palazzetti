@@ -67,7 +67,7 @@ class Palazzetti extends eqLogic
 	public function preSave()
 	{
 		/** selection du fichier de config pour créer les commandes **/
-	    $PalaControl = $this->getConfiguration('PalaControl');
+	    $PalaControl = $this->getConfiguration('PalaControl', 0);
 		if ($PalaControl == 0) {
 			$configFile = "Palazzetti";
 		} else {
@@ -78,11 +78,9 @@ class Palazzetti extends eqLogic
 		//Chaque commande
 		$Order = 0;
 		if (is_array($TabCmd) || is_object($TabCmd)) {
-
 			foreach ($TabCmd as $CmdKey => $Cmd) {
 
 				$PalazzettiCmd = $this->getCmd(null, $Cmd['LogicalId']);
-
 				if (!is_object($PalazzettiCmd)) {
 					$PalazzettiCmd = new PalazzettiCmd();
 				}
