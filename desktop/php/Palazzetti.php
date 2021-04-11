@@ -102,7 +102,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 							</div>
 						</div>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">{{Model : }}</label>
+                            <label class="col-sm-3 control-label">{{Modèle}}</label>
                             <div class="col-sm-3">
                                 <select id="sel_object" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="PoeleType">
                                     <option value="">{{Aucun}}</option>
